@@ -22,7 +22,7 @@ public class Map {
         boolean p = true;
         for (String s: m){
 
-            if (s.startsWith("#") || s.startsWith(" "))
+            if (s.startsWith("#") || s.startsWith("!"))
                 map.add(s);
 
             else{
@@ -109,5 +109,17 @@ public class Map {
         player = history.get(0).getPlayer();
         boxes = history.get(0).getBoxes();
         history.clear();
+    }
+
+    public ArrayList<String> getMap() {
+        return map;
+    }
+
+    public Point2D getPlayer() {
+        return player;
+    }
+
+    public ArrayList<Point2D> getBoxes() {
+        return boxes;
     }
 }
