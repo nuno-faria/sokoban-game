@@ -96,19 +96,24 @@ public class GameMenu implements Observer {
             x = -1;
             for (char c : s.toCharArray()) {
                 x++;
-                ImageView img;
+                String file;
 
-                if (c == '#')
-                    img = new ImageView(new Image("file:resources/wall.bmp"));
+                switch (c){
+                    case '#': file = "file:resources/wall.bmp"; break;
+                    case ' ': file = "file:resources/floor.bmp"; break;
+                    case '.': file = "file:resources/goal.png"; break;
+                    case 'U': file = "file:resources/pipeU.png"; break;
+                    case 'D': file = "file:resources/pipeD.png"; break;
+                    case 'L': file = "file:resources/pipeL.png"; break;
+                    case 'R': file = "file:resources/pipeR.png"; break;
+                    case '&': file = "file:resources/pressure_pad.png"; break;
+                    case '$': if (!game.getCurrentMap().isPressurePadActivated())
+                                file = "file:resources/gate.bmp";
+                              else file = "file:resources/floor.bmp"; break;
+                    default: continue;
+                }
 
-                else if (c == ' ')
-                    img = new ImageView(new Image("file:resources/floor.bmp"));
-
-                else if (c == '.')
-                    img = new ImageView(new Image("file:resources/goal.png"));
-
-                else continue;
-
+                ImageView img = new ImageView(new Image(file));
                 img.relocate((x + xBegin) * xStep, (y + yBegin) * yStep);
                 pane.getChildren().add(img);
             }
@@ -127,6 +132,7 @@ public class GameMenu implements Observer {
             String name;
             switch (game.getCurrentMap().charAt(b)){
                 case '.': name = "file:resources/boxO.png"; break;
+                case '&': name = "file:resources/boxP.png"; break;
                 default: name = "file:resources/box.png";
             }
 
