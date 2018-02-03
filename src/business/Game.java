@@ -40,4 +40,45 @@ public class Game extends Observable {
     public Map getCurrentMap(){
         return maps.get(currentMap);
     }
+
+    public void move(char c){
+        if (maps.get(currentMap).move(c)) {
+            if (maps.get(currentMap).isLevelCompleted()) {
+                maps.get(currentMap).reset();
+                currentMap++;
+            }
+            setUpdated();
+        }
+    }
+
+    public void undo(){
+        if(maps.get(currentMap).undo())
+            setUpdated();
+    }
+
+    public void reset(){
+        if (maps.get(currentMap).reset())
+            setUpdated();
+    }
+
+    public void nextMap(){
+        if (maps.size() - 1 > currentMap) {
+            maps.get(currentMap).reset();
+            currentMap++;
+            setUpdated();
+        }
+    }
+
+    public void prevMap(){
+        if (currentMap > 0){
+            maps.get(currentMap).reset();
+            currentMap--;
+            setUpdated();
+        }
+    }
+
+    public void setUpdated(){
+        setChanged();
+        notifyObservers();
+    }
 }

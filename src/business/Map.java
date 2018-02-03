@@ -2,6 +2,7 @@ package business;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by Nuno on 02/02/2018.
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 public class Map {
 
     private ArrayList<String> map;
+    private ArrayList<String> reversedMap; //because coordinates given are different from map coordinates
     private Point2D player;
     private ArrayList<Point2D> boxes;
     private ArrayList<State> history;
@@ -38,11 +40,16 @@ public class Map {
                     boxes.add(new Point2D.Double(x, y));
             }
         }
+        reversedMap = (ArrayList<String>) map.clone();
+        Collections.reverse(reversedMap);
     }
 
+    public char charAt(Point2D p){
+        return reversedMap.get((int) p.getY()).charAt((int) p.getX());
+    }
 
     private boolean barrier(Point2D p, ArrayList<Point2D> boxes){
-        Character c = map.get((int) p.getY()).charAt((int) p.getX());
+        char c = charAt(p);
         if (c == '#' || existsBox(p, boxes))
             return true;
         else return false;
@@ -55,7 +62,7 @@ public class Map {
         return false;
     }
 
-    private void moveBox(Point2D p, ArrayList<Point2D> boxes, int x, int y){
+    public void moveBox(Point2D p, ArrayList<Point2D> boxes, int x, int y){
         for (Point2D coord: boxes)
             if (coord.equals(p)) {
                 coord.setLocation(coord.getX() + x, coord.getY() + y);
@@ -63,7 +70,7 @@ public class Map {
             }
     }
 
-    private boolean move(Character c){
+    public boolean move(Character c){
         int x = 0;
         int y = 0;
 
@@ -78,7 +85,7 @@ public class Map {
         int py = (int) player.getY() + y;
 
         //wall
-        if (map.get(py).charAt(px) == '#')
+        if (charAt(new Point2D.Double(px, py)) == '#')
             return false;
 
         //box and barrier (wall, another box, ...)
@@ -86,15 +93,18 @@ public class Map {
                 && barrier(new Point2D.Double(px + x, py + y), boxes))
             return false;
 
-        moveBox(new Point2D.Double(px, py), boxes, x, y);
-        player.setLocation(px, py);
+
+        //valid move
 
         history.add(new State(player, boxes));
+
+        moveBox(new Point2D.Double(px, py), boxes, x, y);
+        player.setLocation(px, py);
 
         return true;
     }
 
-    private boolean undo(){
+    public boolean undo(){
         int size = history.size();
         if (size > 0) {
             player = history.get(size-1).getPlayer();
@@ -105,14 +115,28 @@ public class Map {
         else return false;
     }
 
-    public void reset(){
-        player = history.get(0).getPlayer();
-        boxes = history.get(0).getBoxes();
-        history.clear();
+    public boolean reset(){
+        if (history.size() > 0) {
+            player = history.get(0).getPlayer();
+            boxes = history.get(0).getBoxes();
+            history.clear();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isLevelCompleted(){
+        return boxes.stream()
+                    .filter(b -> charAt(b) == '.')
+                    .count() == boxes.size();
     }
 
     public ArrayList<String> getMap() {
         return map;
+    }
+
+    public ArrayList<String> getReversedMap(){
+        return reversedMap;
     }
 
     public Point2D getPlayer() {

@@ -2,6 +2,7 @@ package business;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Created by Nuno on 02/02/2018.
@@ -13,7 +14,9 @@ public class State {
 
     public State(Point2D player, ArrayList<Point2D> boxes){
         this.player = (Point2D) player.clone();
-        this.boxes = (ArrayList<Point2D>) boxes.clone();
+        this.boxes = boxes.stream()
+                          .map(p -> ((Point2D) p.clone()))
+                          .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public Point2D getPlayer() {

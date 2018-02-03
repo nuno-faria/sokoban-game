@@ -1,5 +1,6 @@
 package ui;
 
+import business.Game;
 import business.Map;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -17,11 +18,16 @@ import java.util.Observer;
 public class GameMenu implements Observer {
 
     private Stage stage;
+    private Scene scene;
+    private AnchorPane pane;
+    private Game game;
     private int width = 1400;
     private int heigth = 900;
-    private char direction;
+    private char direction = 'R';
 
     public GameMenu() {
+
+        game = Main.game;
 
         Main.game.addObserver(this);
 
@@ -29,28 +35,61 @@ public class GameMenu implements Observer {
         stage.setWidth(1500);
         stage.setHeight(900);
         stage.setResizable(false);
+        stage.getIcons().add(new Image("file:resources/box.png"));
         stage.show();
 
-        drawMap();
+        pane = new AnchorPane();
+        pane.setStyle("-fx-background-color: #f8f8e0;");
 
-        //button handlers
+        scene = new Scene(pane);
+
+        stage.setScene(scene);
+
+        //key handler
+        scene.setOnKeyPressed(key -> {
+            switch (key.getCode()){
+                //movement
+                case W: direction = 'U'; game.move('U'); break;
+                case UP: direction = 'U'; game.move('U'); break;
+                case S: direction = 'D'; game.move('D'); break;
+                case DOWN: direction = 'D'; game.move('D'); break;
+                case A: direction = 'L'; game.move('L'); break;
+                case LEFT: direction = 'L'; game.move('L'); break;
+                case D: direction = 'R'; game.move('R'); break;
+                case RIGHT: direction = 'R'; game.move('R'); break;
+
+                //undo
+                case U: game.undo(); break;
+
+                //reset
+                case R: direction = 'R'; game.reset(); break;
+
+                //next map
+                case M: direction = 'R'; game.nextMap(); break;
+
+                //prev map
+                case N: direction = 'R'; game.prevMap(); break;
+            }
+        });
+
+        drawMap();
     }
 
     public void drawMap(){
+        pane.getChildren().clear();
+
         int x = 0;
         int y = 0;
         int xStep = 50;
         int yStep = 50;
 
-        Map m = Main.game.getCurrentMap();
+        Map m = game.getCurrentMap();
 
         int mapWidth = m.getMap().get(0).length();
         int mapHeigth = m.getMap().size();
 
         int xBegin = (width - mapWidth * 50) / (2 * 50);
         int yBegin = (heigth - mapHeigth * 50) / (2 * 50);
-
-        AnchorPane pane = new AnchorPane();
 
         //map
         for (String s: m.getMap()) {
@@ -77,21 +116,24 @@ public class GameMenu implements Observer {
         }
 
         //player
-        ImageView player = new ImageView(new Image("file:resources/player_r.png"));
+        ImageView player = new ImageView(new Image("file:resources/player" + direction + ".png"));
         Point2D p = m.getPlayer();
         player.relocate((p.getX() + xBegin) * xStep, (mapHeigth-1 - p.getY() + yBegin) * yStep);
         pane.getChildren().add(player);
 
         //boxes
         for (Point2D b: m.getBoxes()){
-            ImageView box = new ImageView(new Image("file:resources/box.png"));
+
+            String name;
+            switch (game.getCurrentMap().charAt(b)){
+                case '.': name = "file:resources/boxO.png"; break;
+                default: name = "file:resources/box.png";
+            }
+
+            ImageView box = new ImageView(new Image(name));
             box.relocate((b.getX() + xBegin) * xStep, (mapHeigth-1 - b.getY() + yBegin) * yStep);
             pane.getChildren().add(box);
         }
-
-        pane.setStyle("-fx-background-color: #f8f8e0;");
-        Scene scene = new Scene(pane);
-        stage.setScene(scene);
     }
 
     @Override
