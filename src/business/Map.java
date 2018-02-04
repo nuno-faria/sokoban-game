@@ -58,6 +58,7 @@ public class Map {
                 else if (c == '&')
                     pressurePad = point;
             }
+        updatePressurePad();
     }
 
     public char charAt(Point2D p){
@@ -176,6 +177,7 @@ public class Map {
             player = history.get(size-1).getPlayer();
             boxes = history.get(size-1).getBoxes();
             history.remove(size-1);
+            updatePressurePad();
             return true;
         }
         else return false;
@@ -186,6 +188,7 @@ public class Map {
             player = history.get(0).getPlayer();
             boxes = history.get(0).getBoxes();
             history.clear();
+            updatePressurePad();
             return true;
         }
         return false;

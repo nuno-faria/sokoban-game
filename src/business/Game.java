@@ -1,8 +1,10 @@
 package business;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import data.Data;
+
+import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Observable;
 
 /**
@@ -11,12 +13,18 @@ import java.util.Observable;
 public class Game extends Observable {
 
     private ArrayList<Map> maps;
+    private HashMap<Integer, Integer> highscore;
+    private HashMap<Integer, Integer> currentNumberMoves;
     private int currentMap;
 
     public Game(String filename){
 
         maps = new ArrayList<>();
         currentMap = 0;
+
+        highscore = Data.loadHighscore();
+        if (highscore == null)
+            highscore = new HashMap<>();
 
         //parser
         try {
@@ -35,6 +43,10 @@ public class Game extends Observable {
         catch (Exception e) {
             e.printStackTrace();
         }
+
+        currentNumberMoves = new HashMap<>();
+        for (int i=0; i<maps.size(); i++)
+            currentNumberMoves.put(i, 0);
     }
 
     public Map getCurrentMap(){
@@ -44,26 +56,40 @@ public class Game extends Observable {
     public void move(char c){
         if (maps.get(currentMap).move(c)) {
             if (maps.get(currentMap).isLevelCompleted()) {
-                maps.get(currentMap).reset();
+
+                //save new highscore if its better than previous
+                int hash = getCurrentMap().getMap().hashCode();
+                int nMoves = currentNumberMoves.get(currentMap);
+                if (!highscore.containsKey(hash) || nMoves < highscore.get(hash)) {
+                    highscore.put(hash, nMoves);
+                    Data.saveHighscore(highscore);
+                }
+
+                reset();
                 currentMap++;
             }
+            currentNumberMoves.put(currentMap, currentNumberMoves.get(currentMap) + 1);
             setUpdated();
         }
     }
 
     public void undo(){
-        if(maps.get(currentMap).undo())
+        if(maps.get(currentMap).undo()) {
+            currentNumberMoves.put(currentMap, currentNumberMoves.get(currentMap) - 1);
             setUpdated();
+        }
     }
 
     public void reset(){
-        if (maps.get(currentMap).reset())
+        if (maps.get(currentMap).reset()) {
+            currentNumberMoves.put(currentMap, 0);
             setUpdated();
+        }
     }
 
     public void nextMap(){
         if (maps.size() - 1 > currentMap) {
-            maps.get(currentMap).reset();
+            reset();
             currentMap++;
             setUpdated();
         }
@@ -71,10 +97,25 @@ public class Game extends Observable {
 
     public void prevMap(){
         if (currentMap > 0){
-            maps.get(currentMap).reset();
+            reset();
             currentMap--;
             setUpdated();
         }
+    }
+
+    public int getNMoves(){
+        return currentNumberMoves.get(currentMap);
+    }
+
+    public int getCurrentMapNumber(){
+        return currentMap;
+    }
+
+    public String getCurrentMapHighscore(){
+        int hash = getCurrentMap().getMap().hashCode();
+        if (highscore.containsKey(hash))
+            return highscore.get(hash).toString();
+        else return "-";
     }
 
     public void setUpdated(){

@@ -3,9 +3,13 @@ package ui;
 import business.Game;
 import business.Map;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.awt.geom.Point2D;
@@ -69,10 +73,14 @@ public class GameMenu implements Observer {
 
                 //prev map
                 case N: direction = 'R'; game.prevMap(); break;
+
+                //exit
+                case ESCAPE: System.exit(0);
             }
         });
 
         drawMap();
+        drawInfo();
     }
 
     public void drawMap(){
@@ -88,7 +96,7 @@ public class GameMenu implements Observer {
         int mapWidth = m.getMap().get(0).length();
         int mapHeigth = m.getMap().size();
 
-        int xBegin = (width - mapWidth * 50) / (2 * 50);
+        int xBegin = (width - mapWidth * 50) / (2 * 50) - 1;
         int yBegin = (heigth - mapHeigth * 50) / (2 * 50);
 
         //map
@@ -142,8 +150,34 @@ public class GameMenu implements Observer {
         }
     }
 
+    public void drawInfo(){
+        ImageView img = new ImageView(new Image("file:resources/frame.png"));
+        img.relocate(1210, 200);
+
+        //number moves
+        Label info = new Label( "Map number: " + game.getCurrentMapNumber() +
+                                "\nNumber moves: " + game.getNMoves() +
+                                "\nHighscore: " + game.getCurrentMapHighscore());
+        info.setFont(new Font("Consolas", 14));
+        info.setTextFill(Color.LIME);
+        info.relocate(1250, 300);
+
+        //controls
+        Label controls = new Label("\n\nWASD/keys : move" +
+                                    "\nN/M : prev/next level" +
+                                    "\nU/R : undo/reset" +
+                                    "\nESC : exit");
+        controls.setFont(new Font("Consolas", 10));
+        controls.setTextFill(Color.WHITE);
+        controls.relocate(1250, 330);
+
+
+        pane.getChildren().addAll(img, info, controls);
+    }
+
     @Override
     public void update(Observable o, Object arg) {
         drawMap();
+        drawInfo();
     }
 }
