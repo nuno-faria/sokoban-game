@@ -16,11 +16,11 @@ public class Client {
     private Game game;
 
     public Client(String ip, int port) throws IOException {
-            socket = new Socket(ip, port);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            game = Main.game;
-            new ClientWorker();
+        socket = new Socket(ip, port);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        game = Main.game;
+        new ClientWorker();
     }
 
     public void sendMessage(String message){
@@ -30,7 +30,6 @@ public class Client {
             out.flush();
         }
         catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -46,8 +45,7 @@ public class Client {
             try {
                 while ((message = in.readLine()) != null){
                     String info[] = message.split(" ");
-
-                    if (info[0].equals("MAP")){
+                    if (info[0].equals("MAP")) {
                         int currentMap = Integer.parseInt(info[1]);
                         int nMoves = Integer.parseInt(info[2]);
                         int highscore = Integer.parseInt(info[3]);
@@ -55,11 +53,13 @@ public class Client {
                         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
                         Map map = (MapCoop) ois.readObject();
                         game.updateMap(currentMap, map, nMoves, highscore);
+                        sendMessage("Confirm");
                     }
                 }
                 socket.close();
             }
             catch (Exception e) {
+                System.err.println("Connection closed");
                 e.printStackTrace();
             }
         }

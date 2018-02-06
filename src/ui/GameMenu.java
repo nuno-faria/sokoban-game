@@ -45,6 +45,11 @@ public class GameMenu implements Observer {
         stage.setResizable(false);
         stage.getIcons().add(new Image("file:resources/box.png"));
         stage.show();
+        stage.setOnCloseRequest(event -> {
+            if (guest)
+                client.sendMessage("Exit");
+            else Main.closeServer();
+            });
 
         pane = new AnchorPane();
         pane.setStyle("-fx-background-color: #f8f8e0;");
@@ -84,7 +89,7 @@ public class GameMenu implements Observer {
                 }
             }
             else{
-                switch (key.getCode()){
+                switch (key.getCode()) {
                     case W: client.sendMessage("Move U"); break;
                     case UP: client.sendMessage("Move U"); break;
                     case S: client.sendMessage("Move D"); break;

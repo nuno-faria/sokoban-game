@@ -25,8 +25,8 @@ public class State implements Serializable {
         this.player = (Point2D) player.clone();
         this.guestPlayer = (Point2D) guestPlayer.clone();
         this.boxes = boxes.stream()
-                .map(p -> ((Point2D) p.clone()))
-                .collect(Collectors.toCollection(ArrayList::new));
+                          .map(p -> ((Point2D) p.clone()))
+                          .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public Point2D getPlayer() {

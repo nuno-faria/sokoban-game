@@ -306,3 +306,5 @@ nbactions.xml
 nb-configuration.xml
 .netbeans_automatic_build
 .netbeans_update_resources
+
+out/

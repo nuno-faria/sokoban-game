@@ -128,7 +128,7 @@ public class Game extends Observable implements Serializable{
     public void updateMap(int num, Map map, int nMoves, int hscore){
         maps.set(num, map);
         currentMap = num;
-        currentNumberMoves.put(nMoves, nMoves);
+        currentNumberMoves.put(num, nMoves);
         highscore.put(num, hscore);
         setUpdated();
     }
