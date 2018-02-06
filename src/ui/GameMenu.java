@@ -1,14 +1,14 @@
 package ui;
 
-import business.Game;
-import business.Map;
+import Main.Main;
+import business.*;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -27,13 +27,17 @@ public class GameMenu implements Observer {
     private Game game;
     private int width = 1400;
     private int heigth = 900;
-    private char direction = 'R';
+    private boolean guest;
+    private Client client;
 
-    public GameMenu() {
+    public GameMenu(boolean guest) {
+
+        this.guest = guest;
 
         game = Main.game;
+        client = Main.client;
 
-        Main.game.addObserver(this);
+        game.addObserver(this);
 
         stage = new Stage();
         stage.setWidth(1500);
@@ -51,31 +55,45 @@ public class GameMenu implements Observer {
 
         //key handler
         scene.setOnKeyPressed(key -> {
-            switch (key.getCode()){
-                //movement
-                case W: direction = 'U'; game.move('U'); break;
-                case UP: direction = 'U'; game.move('U'); break;
-                case S: direction = 'D'; game.move('D'); break;
-                case DOWN: direction = 'D'; game.move('D'); break;
-                case A: direction = 'L'; game.move('L'); break;
-                case LEFT: direction = 'L'; game.move('L'); break;
-                case D: direction = 'R'; game.move('R'); break;
-                case RIGHT: direction = 'R'; game.move('R'); break;
+            if (!guest) {
+                switch (key.getCode()) {
+                    //movement
+                    case W: game.move('U'); break;
+                    case UP: game.move('U'); break;
+                    case S: game.move('D'); break;
+                    case DOWN: game.move('D'); break;
+                    case A: game.move('L'); break;
+                    case LEFT: game.move('L'); break;
+                    case D: game.move('R'); break;
+                    case RIGHT: game.move('R'); break;
 
-                //undo
-                case U: game.undo(); break;
+                    //undo
+                    case U: game.undo(); break;
 
-                //reset
-                case R: direction = 'R'; game.reset(); break;
+                    //reset
+                    case R: game.reset(); break;
 
-                //next map
-                case M: direction = 'R'; game.nextMap(); break;
+                    //next map
+                    case M: game.nextMap(); break;
 
-                //prev map
-                case N: direction = 'R'; game.prevMap(); break;
+                    //prev map
+                    case N: game.prevMap(); break;
 
-                //exit
-                case ESCAPE: System.exit(0);
+                    //exit
+                    case ESCAPE: System.exit(0);
+                }
+            }
+            else{
+                switch (key.getCode()){
+                    case W: client.sendMessage("Move U"); break;
+                    case UP: client.sendMessage("Move U"); break;
+                    case S: client.sendMessage("Move D"); break;
+                    case DOWN: client.sendMessage("Move D"); break;
+                    case A: client.sendMessage("Move L"); break;
+                    case LEFT: client.sendMessage("Move L"); break;
+                    case D: client.sendMessage("Move R"); break;
+                    case RIGHT: client.sendMessage("Move R"); break;
+                }
             }
         });
 
@@ -84,6 +102,7 @@ public class GameMenu implements Observer {
     }
 
     public void drawMap(){
+
         pane.getChildren().clear();
 
         int x = 0;
@@ -129,10 +148,19 @@ public class GameMenu implements Observer {
         }
 
         //player
-        ImageView player = new ImageView(new Image("file:resources/player" + direction + ".png"));
+        ImageView player = new ImageView(new Image("file:resources/player" + m.getPlayerDirection() + ".png"));
         Point2D p = m.getPlayer();
         player.relocate((p.getX() + xBegin) * xStep, (mapHeigth-1 - p.getY() + yBegin) * yStep);
         pane.getChildren().add(player);
+
+        //guest player
+        if (m instanceof MapCoop) {
+            ImageView player2 = new ImageView(new Image("file:resources/player2" +
+                                                        ((MapCoop) m).getGuestPlayerDirection() + ".png"));
+            Point2D p2 = ((MapCoop) m).getGuestPlayer();
+            player2.relocate((p2.getX() + xBegin) * xStep, (mapHeigth - 1 - p2.getY() + yBegin) * yStep);
+            pane.getChildren().add(player2);
+        }
 
         //boxes
         for (Point2D b: m.getBoxes()){
@@ -177,7 +205,9 @@ public class GameMenu implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        drawMap();
-        drawInfo();
+        Platform.runLater( () -> {
+            drawMap();
+            drawInfo();
+        });
     }
 }

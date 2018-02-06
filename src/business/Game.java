@@ -10,14 +10,14 @@ import java.util.Observable;
 /**
  * Created by Nuno on 02/02/2018.
  */
-public class Game extends Observable {
+public class Game extends Observable implements Serializable{
 
     private ArrayList<Map> maps;
     private HashMap<Integer, Integer> highscore;
     private HashMap<Integer, Integer> currentNumberMoves;
     private int currentMap;
 
-    public Game(String filename){
+    public Game(String filename, boolean coop){
 
         maps = new ArrayList<>();
         currentMap = 0;
@@ -36,7 +36,11 @@ public class Game extends Observable {
                 while ((line = in.readLine()) != null && !line.equals("MAPBREAK"))
                     m.add(line);
 
-                Map map = new Map(m);
+
+                Map map;
+                if (coop) map = new MapCoop(m);
+                else map = new Map(m);
+
                 maps.add(map);
             }
         }
@@ -54,7 +58,11 @@ public class Game extends Observable {
     }
 
     public void move(char c){
-        if (maps.get(currentMap).move(c)) {
+        move(c, '1');
+    }
+
+    public synchronized void move(char c, char p){
+        if (maps.get(currentMap).move(c, p)) {
             if (maps.get(currentMap).isLevelCompleted()) {
 
                 //save new highscore if its better than previous
@@ -64,11 +72,10 @@ public class Game extends Observable {
                     highscore.put(hash, nMoves);
                     Data.saveHighscore(highscore);
                 }
-
                 reset();
                 currentMap++;
             }
-            currentNumberMoves.put(currentMap, currentNumberMoves.get(currentMap) + 1);
+            else currentNumberMoves.put(currentMap, currentNumberMoves.get(currentMap) + 1);
             setUpdated();
         }
     }
@@ -116,6 +123,14 @@ public class Game extends Observable {
         if (highscore.containsKey(hash))
             return highscore.get(hash).toString();
         else return "-";
+    }
+
+    public void updateMap(int num, Map map, int nMoves, int hscore){
+        maps.set(num, map);
+        currentMap = num;
+        currentNumberMoves.put(nMoves, nMoves);
+        highscore.put(num, hscore);
+        setUpdated();
     }
 
     public void setUpdated(){
