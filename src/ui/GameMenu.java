@@ -27,12 +27,9 @@ public class GameMenu implements Observer {
     private Game game;
     private int width = 1400;
     private int heigth = 900;
-    private boolean guest;
     private Client client;
 
-    public GameMenu(boolean guest) {
-
-        this.guest = guest;
+    public GameMenu(boolean coop) {
 
         game = Main.game;
         client = Main.client;
@@ -46,10 +43,10 @@ public class GameMenu implements Observer {
         stage.getIcons().add(new Image("file:resources/box.png"));
         stage.show();
         stage.setOnCloseRequest(event -> {
-            if (guest)
+            if (coop)
                 client.sendMessage("Exit");
             else Main.closeServer();
-            });
+        });
 
         pane = new AnchorPane();
         pane.setStyle("-fx-background-color: #f8f8e0;");
@@ -60,7 +57,7 @@ public class GameMenu implements Observer {
 
         //key handler
         scene.setOnKeyPressed(key -> {
-            if (!guest) {
+            if (!coop) {
                 switch (key.getCode()) {
                     //movement
                     case W: game.move('U'); break;
@@ -83,9 +80,6 @@ public class GameMenu implements Observer {
 
                     //prev map
                     case N: game.prevMap(); break;
-
-                    //exit
-                    case ESCAPE: System.exit(0);
                 }
             }
             else{
@@ -98,6 +92,9 @@ public class GameMenu implements Observer {
                     case LEFT: client.sendMessage("Move L"); break;
                     case D: client.sendMessage("Move R"); break;
                     case RIGHT: client.sendMessage("Move R"); break;
+
+                    //exit
+                    case ESCAPE: System.exit(0);
                 }
             }
         });
@@ -139,9 +136,14 @@ public class GameMenu implements Observer {
                     case 'L': file = "file:resources/pipeL.png"; break;
                     case 'R': file = "file:resources/pipeR.png"; break;
                     case '&': file = "file:resources/pressure_pad.png"; break;
-                    case '$': if (!game.getCurrentMap().isPressurePadActivated())
+                    case '$': if (!m.isPressurePadActivated())
                                 file = "file:resources/gate.bmp";
-                              else file = "file:resources/floor.bmp"; break;
+                              else file = "file:resources/floor.bmp";
+                              break;
+                    case '%': if (m.isPressurePadActivated())
+                                file = "file:resources/negativeGate.png";
+                              else file = "file:resources/floor.bmp";
+                              break;
                     default: continue;
                 }
 
@@ -159,10 +161,10 @@ public class GameMenu implements Observer {
         pane.getChildren().add(player);
 
         //guest player
-        if (m instanceof MapCoop) {
+        if (m.isCoop()) {
             ImageView player2 = new ImageView(new Image("file:resources/player2" +
-                                                        ((MapCoop) m).getGuestPlayerDirection() + ".png"));
-            Point2D p2 = ((MapCoop) m).getGuestPlayer();
+                                                m.getGuestPlayerDirection() + ".png"));
+            Point2D p2 = m.getGuestPlayer();
             player2.relocate((p2.getX() + xBegin) * xStep, (mapHeigth - 1 - p2.getY() + yBegin) * yStep);
             pane.getChildren().add(player2);
         }
@@ -170,11 +172,16 @@ public class GameMenu implements Observer {
         //boxes
         for (Point2D b: m.getBoxes()){
 
-            String name;
+            String name = "file:resources/box.png";
             switch (game.getCurrentMap().charAt(b)){
                 case '.': name = "file:resources/boxO.png"; break;
                 case '&': name = "file:resources/boxP.png"; break;
-                default: name = "file:resources/box.png";
+                case '$': if (!m.isPressurePadActivated())
+                            name = "file:resources/box&gate.png";
+                          break;
+                case '%': if (m.isPressurePadActivated())
+                            name = "file:resources/box&negativeGate.png";
+                          break;
             }
 
             ImageView box = new ImageView(new Image(name));
@@ -199,7 +206,7 @@ public class GameMenu implements Observer {
         Label controls = new Label("\n\nWASD/keys : move" +
                                     "\nN/M : prev/next level" +
                                     "\nU/R : undo/reset" +
-                                    "\nESC : exit");
+                                    "\nEsc : exit");
         controls.setFont(new Font("Consolas", 10));
         controls.setTextFill(Color.WHITE);
         controls.relocate(1250, 330);

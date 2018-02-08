@@ -6,21 +6,29 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Observable;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by Nuno on 02/02/2018.
  */
 public class Game extends Observable implements Serializable{
 
-    private ArrayList<Map> maps;
+    private HashMap<Integer, Map> maps;
     private HashMap<Integer, Integer> highscore;
     private HashMap<Integer, Integer> currentNumberMoves;
     private int currentMap;
+    private ReentrantLock lock;
 
     public Game(String filename, boolean coop){
 
-        maps = new ArrayList<>();
+        maps = new HashMap<>();
+        highscore = new HashMap<>();
+        currentNumberMoves = new HashMap<>();
         currentMap = 0;
+        lock = new ReentrantLock();
+
+        if (filename.equals("null"))
+            return;
 
         highscore = Data.loadHighscore();
         if (highscore == null)
@@ -36,19 +44,16 @@ public class Game extends Observable implements Serializable{
                 while ((line = in.readLine()) != null && !line.equals("MAPBREAK"))
                     m.add(line);
 
+                Map map = new Map(m, coop);
 
-                Map map;
-                if (coop) map = new MapCoop(m);
-                else map = new Map(m);
-
-                maps.add(map);
+                maps.put(i, map);
+                i++;
             }
         }
         catch (Exception e) {
             e.printStackTrace();
         }
 
-        currentNumberMoves = new HashMap<>();
         for (int i=0; i<maps.size(); i++)
             currentNumberMoves.put(i, 0);
     }
@@ -61,9 +66,10 @@ public class Game extends Observable implements Serializable{
         move(c, '1');
     }
 
-    public synchronized void move(char c, char p){
+    public void move(char c, char p){
+        lock.lock();
         if (maps.get(currentMap).move(c, p)) {
-            if (maps.get(currentMap).isLevelCompleted()) {
+            if (maps.get(currentMap).isLevelCompleted() && currentMap < maps.size() - 1) {
 
                 //save new highscore if its better than previous
                 int hash = getCurrentMap().getMap().hashCode();
@@ -78,6 +84,7 @@ public class Game extends Observable implements Serializable{
             else currentNumberMoves.put(currentMap, currentNumberMoves.get(currentMap) + 1);
             setUpdated();
         }
+        lock.unlock();
     }
 
     public void undo(){
@@ -126,7 +133,7 @@ public class Game extends Observable implements Serializable{
     }
 
     public void updateMap(int num, Map map, int nMoves, int hscore){
-        maps.set(num, map);
+        maps.put(num, map);
         currentMap = num;
         currentNumberMoves.put(num, nMoves);
         highscore.put(num, hscore);
@@ -136,5 +143,13 @@ public class Game extends Observable implements Serializable{
     public void setUpdated(){
         setChanged();
         notifyObservers();
+    }
+
+    public void lock(){
+        lock.lock();
+    }
+
+    public void unlock(){
+        lock.unlock();
     }
 }

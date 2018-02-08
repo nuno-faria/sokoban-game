@@ -18,17 +18,17 @@
             <Font size="16.0" />
          </font>
       </Button>
+      <Button fx:id="hostButton" layoutX="282.0" layoutY="130.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="148.0" text="Lan Coop - Host">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
       <Button fx:id="guestButton" layoutX="282.0" layoutY="176.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="148.0" text="Lan Coop - Guest" textFill="#303030">
          <font>
             <Font size="16.0" />
          </font>
       </Button>
       <TextField fx:id="ipInput" layoutX="282.0" layoutY="218.0" prefHeight="25.0" prefWidth="148.0" promptText="IP" />
-      <Button fx:id="hostButton" layoutX="282.0" layoutY="130.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="148.0" text="Lan Coop - Host">
-         <font>
-            <Font size="16.0" />
-         </font>
-      </Button>
       <ImageView fitHeight="225.0" fitWidth="225.0" layoutX="12.0" layoutY="18.0">
          <image>
             <Image url="@../../resources/menu_box.png" />

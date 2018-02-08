@@ -35,8 +35,7 @@ public class Server implements Runnable{
             try {
                 socketC.close();
             }
-            catch (IOException e) {
-                e.printStackTrace();
+            catch (Exception e) {
             }
         }
     }
@@ -88,9 +87,11 @@ public class Server implements Runnable{
 
         public void sendMapObject(){
             try {
+                game.lock();
                 ObjectOutputStream oos = new ObjectOutputStream(socketC.getOutputStream());
                 oos.writeObject(game.getCurrentMap());
                 oos.flush();
+                game.unlock();
             }
             catch (IOException e) {
             }

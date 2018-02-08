@@ -48,10 +48,12 @@ public class Client {
                     if (info[0].equals("MAP")) {
                         int currentMap = Integer.parseInt(info[1]);
                         int nMoves = Integer.parseInt(info[2]);
-                        int highscore = Integer.parseInt(info[3]);
+                        int highscore = -1;
+                        if (!info[3].equals("-"))
+                            highscore = Integer.parseInt(info[3]);
                         sendMessage("Send");
                         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-                        Map map = (MapCoop) ois.readObject();
+                        Map map = (Map) ois.readObject();
                         game.updateMap(currentMap, map, nMoves, highscore);
                         sendMessage("Confirm");
                     }

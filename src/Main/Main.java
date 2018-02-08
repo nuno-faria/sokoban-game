@@ -61,7 +61,7 @@ public class Main extends Application{
 
     public static void startGuest(String ip){
         try {
-            String filename = "resources/maps-coop.txt";
+            String filename = "null";
             game = new Game(filename, true);
             client = new Client(ip, 12346);
             new GameMenu(true);
